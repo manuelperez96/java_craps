@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
@@ -9,6 +8,8 @@ public class Main {
     final int PLAY = 1;
     final int EXIT = 2;
     final int CRAP = 7;
+    final int INITIAL_USER_MONEY = 1000;
+    int currentUserMoney = INITIAL_USER_MONEY;
     final int[] AVAILABLE_MENU_OPTIONS = {PLAY, EXIT};
     final int[] WIN_THROWS = {7, 11};
     final int[] LOSE_THROWS = {2, 3, 12};
@@ -22,7 +23,12 @@ public class Main {
         while (true) {
             showStartMenuOption();
             int userOption = requestUserOption(AVAILABLE_MENU_OPTIONS);
-            shouldInitGame(userOption);
+            if (shouldInitGame(userOption)) {
+                runFirstThrowLogic();
+            } else {
+                System.out.println("Nos vemos pronto. Hasta luego.");
+                System.exit(0);
+            };
         }
     }
 
@@ -60,13 +66,8 @@ public class Main {
         return userOption;
     }
 
-    private void shouldInitGame(int userOption) {
-        if (userOption == PLAY) {
-            runFirstThrowLogic();
-        } else {
-            System.out.println("Nos vemos pronto. Hasta luego.");
-            System.exit(0);
-        }
+    private boolean shouldInitGame(int userOption) {
+        return userOption == PLAY;
     }
 
     private void runFirstThrowLogic() {
@@ -102,7 +103,6 @@ public class Main {
     /**
      * This function determine if game should finish.
      *
-     * @param throwValue
      * @return true if game should finish, otherwise return false.
      */
     private boolean runFirstThrowLogic(int throwValue) {
@@ -137,8 +137,6 @@ public class Main {
     /**
      * This function determine if user have to rethrow the dices.
      *
-     * @param firstThrowValue
-     * @param secondThrowValue
      * @return true if user have to throw dices, otherwise, return false.
      */
     private boolean runSecondThrowLogin(int firstThrowValue, int secondThrowValue) {
