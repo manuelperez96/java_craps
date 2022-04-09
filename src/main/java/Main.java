@@ -8,8 +8,6 @@ public class Main {
     final int PLAY = 1;
     final int EXIT = 2;
     final int CRAP = 7;
-    final int INITIAL_USER_MONEY = 1000;
-    int currentUserMoney = INITIAL_USER_MONEY;
     final int[] AVAILABLE_MENU_OPTIONS = {PLAY, EXIT};
     final int[] WIN_THROWS = {7, 11};
     final int[] LOSE_THROWS = {2, 3, 12};
@@ -28,7 +26,7 @@ public class Main {
             } else {
                 System.out.println("Nos vemos pronto. Hasta luego.");
                 System.exit(0);
-            };
+            }
         }
     }
 
@@ -71,10 +69,10 @@ public class Main {
     }
 
     private void runFirstThrowLogic() {
-        int firstThrow = -1;
+        int firstThrow;
 
         showDiceMessage();
-        final int userOption = requestUserOption(new int[]{1});
+        requestUserOption(new int[]{1});
         firstThrow = throwDices(2, 6);
         System.out.println("Has obtenido un " + firstThrow);
         if (!runFirstThrowLogic(firstThrow)) {
@@ -106,7 +104,6 @@ public class Main {
      * @return true if game should finish, otherwise return false.
      */
     private boolean runFirstThrowLogic(int throwValue) {
-        System.out.println("------------ " + throwValue);
         if (isIn(WIN_THROWS, throwValue)) {
             System.out.println("Enhorabuena, has ganado.");
             return true;
@@ -120,11 +117,11 @@ public class Main {
     }
 
     private void startSecondLoopGame(int firstThrowValue) {
-        int secondThrow = -1;
+        int secondThrow;
 
         while (true) {
             showDiceMessage();
-            final int userOption = requestUserOption(new int[]{1});
+            requestUserOption(new int[]{1});
             secondThrow = throwDices(2, 6);
             System.out.println("Has obtenido un " + secondThrow);
 
