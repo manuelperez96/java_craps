@@ -4,13 +4,16 @@ import java.util.Scanner;
 
 public class Main {
     // Used for take user options.
-    final Scanner input = new Scanner(System.in);
-    final int PLAY = 1;
-    final int EXIT = 2;
-    final int CRAP = 7;
-    final int[] AVAILABLE_MENU_OPTIONS = {PLAY, EXIT};
-    final int[] WIN_THROWS = {7, 11};
-    final int[] LOSE_THROWS = {2, 3, 12};
+    final private Scanner input = new Scanner(System.in);
+    final private int PLAY = 1;
+    final private int EXIT = 2;
+    final private int CRAP = 7;
+    final private int[] AVAILABLE_MENU_OPTIONS = {PLAY, EXIT};
+    final private int[] WIN_THROWS = {7, 11};
+    final private int[] LOSE_THROWS = {2, 3, 12};
+    final private double MIN_BET = 20;
+    private double userMoney = 200;
+    private double currentBet = 0;
 
     public static void main(String[] args) {
         new Main().start();
@@ -18,16 +21,43 @@ public class Main {
 
     private void start() {
         showInitialMessage();
-        while (true) {
+        while (_userHasSufficientMoney()) {
             showStartMenuOption();
             int userOption = requestUserOption(AVAILABLE_MENU_OPTIONS);
             if (shouldInitGame(userOption)) {
+                System.out.println("Dinero actual:" + userMoney);
+                System.out.println("¿Cuánto quiere apostar?");
+                currentBet = requestBet(MIN_BET, userMoney);
                 runFirstThrowLogic();
             } else {
                 System.out.println("Nos vemos pronto. Hasta luego.");
                 System.exit(0);
             }
         }
+
+        System.out.println("Vaya, parece que te has quedado sin dinero. Vuelve cuando tengas más.");
+    }
+
+    private double requestBet(double minBet, double userMoney) {
+        if (minBet > userMoney) throw new RuntimeException("User does not have sufficient money");
+        double userBet = 0;
+
+        while (true) {
+            System.out.println("Apuesta mínima actual: " + minBet);
+            try {
+                userBet = input.nextDouble();
+
+                if (userBet >= minBet) return userBet;
+                System.out.println("La apuesta tiene que como mínimo " + minBet);
+            } catch (InputMismatchException e) {
+                System.out.println("apuesta inválida");
+                input.nextLine();
+            }
+        }
+    }
+
+    private boolean _userHasSufficientMoney() {
+        return userMoney >= MIN_BET;
     }
 
     private void showInitialMessage() {
@@ -60,6 +90,7 @@ public class Main {
             }
         } catch (InputMismatchException e) {
             System.out.println("No has introducido una opción correcta");
+            input.nextLine();
         }
         return userOption;
     }
@@ -71,7 +102,7 @@ public class Main {
     private void runFirstThrowLogic() {
         int firstThrow;
 
-        showDiceMessage();
+        showDiceMessage(false);
         requestUserOption(new int[]{1});
         firstThrow = throwDices(2, 6);
         System.out.println("Has obtenido un " + firstThrow);
@@ -81,9 +112,12 @@ public class Main {
 
     }
 
-    private void showDiceMessage() {
+    private void showDiceMessage(boolean isFull) {
         System.out.println("¿Qué quieres hacer?");
         System.out.println("1. Lanzar dados");
+        if (isFull) {
+            System.out.println("2. Apostar");
+        }
     }
 
     private int throwDices(int numberOfDices, int maxDiceValue) {
@@ -106,9 +140,11 @@ public class Main {
     private boolean runFirstThrowLogic(int throwValue) {
         if (isIn(WIN_THROWS, throwValue)) {
             System.out.println("Enhorabuena, has ganado.");
+            runBet(currentBet);
             return true;
         } else if (isIn(LOSE_THROWS, throwValue)) {
             System.out.println("Más suerte la próxima vez, has perdido.");
+            runBet(-currentBet);
             return true;
         } else {
             System.out.println("Parece que volverás a tirar.");
@@ -116,12 +152,25 @@ public class Main {
         }
     }
 
+    private void runBet(double amount) {
+        userMoney += amount;
+        currentBet = 0;
+        System.out.println("Dinero actual: " + userMoney);
+    }
+
     private void startSecondLoopGame(int firstThrowValue) {
         int secondThrow;
-
+        int userOption;
+        final boolean hasUserSufficientMoneyToBet = userMoney > currentBet;
+        final int[] availableOptions = hasUserSufficientMoneyToBet ? new int[]{1, 2} : new int[1];
         while (true) {
-            showDiceMessage();
-            requestUserOption(new int[]{1});
+            showDiceMessage(hasUserSufficientMoneyToBet);
+            userOption = requestUserOption(availableOptions);
+            if (userOption == 2) {
+                currentBet = requestBet(currentBet, userMoney);
+                showDiceMessage(false);
+                requestUserOption(new int[]{1});
+            }
             secondThrow = throwDices(2, 6);
             System.out.println("Has obtenido un " + secondThrow);
 
@@ -139,9 +188,11 @@ public class Main {
     private boolean runSecondThrowLogin(int firstThrowValue, int secondThrowValue) {
         if (secondThrowValue == CRAP) {
             System.out.println("Has perdido. Más suerte la próxima vez.");
+            runBet(-currentBet);
             return true;
         } else if (firstThrowValue == secondThrowValue) {
             System.out.println("Enhorabuena. Has ganado.");
+            runBet(currentBet);
             return true;
         } else {
             System.out.println("Tendrás que volver a tirar.");
