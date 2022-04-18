@@ -7,4 +7,5 @@ public class BasePlayer extends  Player {
     public BasePlayer(String name) {
         super(name, 200);
     }
+
 }
